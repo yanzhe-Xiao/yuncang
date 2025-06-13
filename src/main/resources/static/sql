@@ -1,0 +1,668 @@
+-- 创建商品表
+CREATE TABLE product
+(
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(255)   NOT NULL COMMENT '商品名称（如钢筋、木材等）',
+    sku         VARCHAR(255)   NOT NULL UNIQUE COMMENT '商品编号，格式：product-001',
+    description VARCHAR(255)   NULL COMMENT '商品描述',
+    weight      DECIMAL(10, 2) NOT NULL COMMENT '重量（千克）',
+    length      DECIMAL(10, 2) NOT NULL COMMENT '长度（厘米）',
+    width       DECIMAL(10, 2) NOT NULL COMMENT '宽度（厘米）',
+    height      DECIMAL(10, 2) NOT NULL COMMENT '高度（厘米）'
+)
+    COMMENT '商品信息表（存储钢材、木材等建筑材料信息）';
+
+-- 创建入库单表
+CREATE TABLE inbound_order
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_name   VARCHAR(255) NOT NULL COMMENT '入库单名称（如钢筋入库）',
+    order_number VARCHAR(255) NOT NULL UNIQUE COMMENT '入库单编号，格式：inbound_order-001',
+    create_time   DATETIME         NULL COMMENT '入库日期',
+    user_id      VARCHAR(255) NULL COMMENT '负责人ID，引用user表',
+    status       VARCHAR(255) NOT NULL COMMENT '状态（未开始、进行中、已完成）'
+)
+    COMMENT '入库单表（记录建筑材料入库信息）';
+
+-- 创建入库单明细表
+CREATE TABLE inbound_order_detail
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_number VARCHAR(255) NOT NULL COMMENT '入库单编号，引用inbound_order表',
+    sku          VARCHAR(255) NOT NULL COMMENT '商品编号，引用product表',
+    quantity     BIGINT       NOT NULL COMMENT '商品数量'
+)
+    COMMENT '入库单明细表（记录入库单的商品详情）';
+
+-- 创建货架层表
+CREATE TABLE storage_shelf
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    shelf_code VARCHAR(255)   NOT NULL UNIQUE COMMENT '货架编号，格式：shelf-001',
+    max_weight DECIMAL(10, 2) NOT NULL COMMENT '最大载重（千克）',
+    length     DECIMAL(10, 2) NOT NULL COMMENT '长度（厘米）',
+    width      DECIMAL(10, 2) NOT NULL COMMENT '宽度（厘米）',
+    height     DECIMAL(10, 2) NOT NULL COMMENT '高度（厘米）',
+    location_x DECIMAL(10, 2) NOT NULL COMMENT '货架中心X坐标（厘米）',
+    location_y DECIMAL(10, 2) NOT NULL COMMENT '货架中心Y坐标（厘米）',
+    location_z DECIMAL(10, 2) NOT NULL COMMENT '货架中心Z坐标（厘米）'
+)
+    COMMENT '货架层表（存储建筑材料货架信息）';
+
+-- 创建货架库存表
+CREATE TABLE shelf_inventory
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+    shelf_code VARCHAR(255) NOT NULL COMMENT '货架编号，引用storage_shelf表',
+    sku        VARCHAR(255) NOT NULL COMMENT '商品编号，引用product表',
+    quantity   BIGINT       NOT NULL COMMENT '商品数量'
+)
+    COMMENT '货架库存表（记录货架上的建筑材料库存）';
+
+-- 创建销售订单表
+CREATE TABLE sales_order
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_number VARCHAR(255) NOT NULL UNIQUE COMMENT '订单编号，格式：order-001',
+    user_id      VARCHAR(255) NOT NULL COMMENT '客户ID，引用user表',
+    create_time   DATETIME         NULL COMMENT '订单日期'
+)
+    COMMENT '销售订单表（记录建筑材料销售订单）';
+
+-- 创建销售订单明细表
+CREATE TABLE sales_order_detail
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_number VARCHAR(255) NOT NULL COMMENT '订单编号，引用sales_order表',
+    sku          VARCHAR(255) NOT NULL COMMENT '商品编号，引用product表',
+    quantity     BIGINT       NOT NULL COMMENT '商品数量'
+)
+    COMMENT '销售订单明细表（记录订单的商品详情）';
+
+-- 创建出库单表
+CREATE TABLE outbound_order
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    order_number VARCHAR(255) NOT NULL COMMENT '订单编号，引用sales_order表',
+    planned_date DATE         NULL COMMENT '预计出库日期',
+    user_id      VARCHAR(255) NULL COMMENT '操作员ID，引用user表',
+    status       VARCHAR(255) NOT NULL COMMENT '状态（未开始、进行中、已完成）'
+)
+    COMMENT '出库单表（记录建筑材料出库信息）';
+
+-- 创建库存表
+CREATE TABLE inventory
+(
+    id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    sku      VARCHAR(255) NOT NULL COMMENT '商品编号，引用product表',
+    quantity BIGINT       NOT NULL COMMENT '总库存量'
+)
+    COMMENT '库存表（记录建筑材料总库存）';
+
+-- 创建AGV小车表
+CREATE TABLE agv_car
+(
+    id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+    car_number    VARCHAR(255)   NOT NULL UNIQUE COMMENT '小车编号，格式：car-001',
+    status        VARCHAR(255)   NOT NULL COMMENT '状态（空闲、任务中、维护中）',
+    battery_level INT            NOT NULL COMMENT '电量百分比（0-100）',
+    sku           VARCHAR(255)   NOT NULL COMMENT '商品编号，引用product表',
+    quantity      BIGINT         NOT NULL COMMENT '运输商品数量',
+    start_x       DECIMAL(10, 2) NULL COMMENT '起始X坐标（厘米）',
+    start_y       DECIMAL(10, 2) NULL COMMENT '起始Y坐标（厘米）',
+    end_x         DECIMAL(10, 2) NULL COMMENT '终点X坐标（厘米）',
+    end_y         DECIMAL(10, 2) NULL COMMENT '终点Y坐标（厘米）',
+    user_id       VARCHAR(255)   NULL COMMENT '负责人ID，引用user表',
+    max_weight    DECIMAL(10, 2) NOT NULL COMMENT '最大载重（千克）'
+)
+    COMMENT 'AGV小车表（记录运输建筑材料的AGV小车信息）';
+
+    alter table agv_car
+        add create_time datetime null;
+
+    alter table agv_car
+        add update_time datetime null;
+
+    alter table agv_car
+        add end_z decimal(10, 2) null comment '目标货架层数';
+
+    alter table agv_car
+        add location_x decimal(10, 2) not null comment '小车停放点X';
+
+    alter table agv_car
+        add location_y decimal(10, 2) not null comment '小车停放点Y';
+
+
+
+
+-- 创建用户表
+CREATE TABLE user
+(
+    id        BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id   VARCHAR(255) NOT NULL UNIQUE COMMENT '用户ID，格式：user-001',
+    username  VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
+    user_type VARCHAR(255) NOT NULL COMMENT '用户类型（管理员、操作员、客户）',
+    password  VARCHAR(255) NOT NULL COMMENT '密码',
+    nickname  VARCHAR(255) NULL COMMENT '昵称',
+    phone     VARCHAR(255)  NULL COMMENT '邮箱',
+    gender    VARCHAR(10)  NULL COMMENT '性别（男、女）'
+)
+    COMMENT '用户表（记录仓库管理员、操作员和客户信息）';
+
+
+create table remind
+(
+    id      bigint auto_increment primary key ,
+    status  varchar(255) not null,
+    message varchar(255) not null comment '标题',
+    context varchar(255) null comment '内容',
+    create_time DATETIME not null,
+    processed varchar(10) not null comment '是否处理过'
+)
+    comment '提示功能';
+
+
+create table factory_config
+(
+    id               bigint auto_increment primary key ,
+    allow_collision   varchar(10)    default '否'       not null,
+    weight_ratio     varchar(20)    default '1/1/2'    not null,
+    path_strategy    varchar(255)   default 'balanced' not null,
+    max_layer        int            default 10         not null,
+    max_layer_weight decimal(10,2)       default 3000       not null,
+    max_shelf_number bigint         default 540        not null,
+    max_car_weight   decimal(10,2)            default 1000       not null comment '小车最大承重',
+    in_and_out_time  int            default 2          not null comment '出入库货物用时',
+    car_speed        decimal(10, 2) default 1          not null
+)
+    comment '全局配置';
+
+
+
+
+
+
+
+
+-- 插入用户表数据（体现一对多：每个用户关联多个订单或小车）
+INSERT INTO user (user_id, username, user_type, password, nickname, phone, gender) VALUES
+('user-001', 'zhangwei', '管理员', 'hashed_password1', '张伟', '1234567890', '男'),
+('user-002', 'lily', '操作员', 'hashed_password2', '李丽', '0987654321', '女'),
+('user-003', 'wangming', '客户', 'hashed_password3', '王明', '5551234567', '男'),
+('user-004', 'chenyan', '客户', 'hashed_password4', '陈燕', '5559876543', '女'),
+('user-005', 'lihua', '操作员', 'hashed_password5', '李华', '5551112222', '男'),
+('user-006', 'zhaoqian', '客户', 'hashed_password6', '赵倩', '5553334444', '女'),
+('user-007', 'sunli', '管理员', 'hashed_password7', '孙丽', '5555556666', '女'),
+('user-008', 'zhoujie', '客户', 'hashed_password8', '周杰', '5557778888', '男'),
+('user-009', 'yangfan', '操作员', 'hashed_password9', '杨帆', '5559990000', '男'),
+('user-010', 'liumei', '客户', 'hashed_password10', '刘梅', '5550001111', '女'),
+('user-011', 'wuxiao', '操作员', 'hashed_password11', '吴晓', '5552223333', '男'),
+('user-012', 'huangli', '客户', 'hashed_password12', '黄莉', '5554445555', '女'),
+('user-013', 'xuming', '管理员', 'hashed_password13', '徐明', '5556667777', '男'),
+('user-014', 'linna', '客户', 'hashed_password14', '林娜', '5558889999', '女'),
+('user-015', 'fengtao', '操作员', 'hashed_password15', '冯涛', '5551110000', '男');
+
+-- 插入商品表数据（建筑材料）
+INSERT INTO product (name, sku, description, weight, length, width, height) VALUES
+('钢筋', 'product-001', '直径12mm建筑用钢筋', 10.0, 50.0, 1.2, 1.2),
+('木材板', 'product-002', '优质松木板材', 5.0, 20.0, 12.0, 2.5),
+('混凝土板', 'product-003', '预制混凝土板', 50.0, 30.0, 15.0, 10.0),
+('钢板', 'product-004', '2mm厚钢板', 20.0, 25.0, 12.5, 0.2),
+('防腐木', 'product-005', '户外用防腐木条', 4.0, 30.0, 10.0, 5.0),
+('不锈钢管', 'product-006', '直径50mm不锈钢管', 8.0, 50.0, 5.0, 5.0),
+('水泥砖', 'product-007', '标准建筑水泥砖', 3.0, 24.0, 11.5, 6.0),
+('铝合金型材', 'product-008', '建筑用铝合金型材', 2.0, 60.0, 5.0, 5.0),
+('钢丝网', 'product-009', '建筑用钢丝网', 1.5, 20.0, 10.0, 0.1),
+('木方', 'product-010', '建筑用木方', 3.5, 40.0, 5.0, 5.0),
+('镀锌钢板', 'product-011', '1mm厚镀锌钢板', 15.0, 20.0, 10.0, 0.1),
+('建筑砂浆', 'product-012', '预混建筑砂浆', 25.0, 5.0, 4.0, 1.0);
+
+-- 插入货架层表数据（适配建筑材料，体现多对多）
+-- 创建存储过程生成数据
+DROP PROCEDURE IF EXISTS GenerateStorageShelfData;
+CREATE PROCEDURE GenerateStorageShelfData()
+BEGIN
+    DECLARE shelf_num INT DEFAULT 1; -- 货架编号
+    DECLARE i INT; -- 行
+    DECLARE j INT; -- 列
+    DECLARE layer_num INT; -- 层号
+
+    -- 遍历行（i = 1 to 34，排除 11, 12, 23, 24）
+    SET i = 1;
+    WHILE i <= 34 DO
+            IF i NOT IN (11, 12, 23, 24) THEN
+                -- 遍历列（j = 1 to 48，但仅处理有效列）
+                SET j = 14;
+                WHILE j <= 47 DO
+                        IF j IN (14, 15, 18, 19, 22, 23, 26, 27, 30, 31, 34, 35, 38, 39, 42, 43, 46, 47) THEN
+                            -- 为每个货架生成 3 层
+                            SET layer_num = 1;
+                            WHILE layer_num <= 3 DO
+                                    INSERT INTO storage_shelf (shelf_code, max_weight, length, width, height, location_x, location_y, location_z)
+                                    VALUES (
+                                               CONCAT('S', LPAD(shelf_num, 3, '0'), '_', layer_num),
+                                               500.0,
+                                               100.0,
+                                               100.0,
+                                               100.0,
+                                               j * 1.0, -- location_x 取 j
+                                               i * 1.0, -- location_y 取 i
+                                               layer_num * 1.0 -- location_z 取层号
+                                           );
+                                    SET layer_num = layer_num + 1;
+                                END WHILE;
+                            SET shelf_num = shelf_num + 1; -- 货架编号递增
+                        END IF;
+                        SET j = j + 1;
+                    END WHILE;
+            END IF;
+            SET i = i + 1;
+        END WHILE;
+END;
+
+-- 执行存储过程
+CALL GenerateStorageShelfData();
+
+-- 插入入库单表数据（体现一对多：每个用户多个入库单）
+INSERT INTO inbound_order (order_name, order_number, entry_date, user_id, status) VALUES
+('钢筋批量入库', 'inbound_order-001', '2025-05-20', 'user-001', '已完成'),
+('木材板补货', 'inbound_order-002', '2025-05-21', 'user-002', '进行中'),
+('混凝土板入库', 'inbound_order-003', '2025-05-22', 'user-005', '未开始'),
+('钢板和不锈钢管入库', 'inbound_order-004', '2025-05-23', 'user-007', '已完成'),
+('防腐木和木方入库', 'inbound_order-005', '2025-05-24', 'user-002', '进行中'),
+('水泥砖和钢丝网入库', 'inbound_order-006', '2025-05-25', 'user-009', '未开始'),
+('铝合金型材入库', 'inbound_order-007', '2025-05-26', 'user-001', '已完成'),
+('综合建筑材料入库', 'inbound_order-008', '2025-05-27', 'user-005', '进行中'),
+('镀锌钢板入库', 'inbound_order-009', '2025-05-28', 'user-011', '未开始'),
+('砂浆和钢筋入库', 'inbound_order-010', '2025-05-29', 'user-015', '已完成');
+
+
+-- 插入入库单明细表数据（体现多对多：一个入库单多种商品，一个商品多个入库单）
+INSERT INTO inbound_order_detail (order_number, sku, quantity) VALUES
+('inbound_order-001', 'product-001', 600),
+('inbound_order-001', 'product-004', 250),
+('inbound_order-001', 'product-011', 200),
+('inbound_order-002', 'product-002', 400),
+('inbound_order-002', 'product-005', 500),
+('inbound_order-002', 'product-010', 300),
+('inbound_order-003', 'product-003', 150),
+('inbound_order-003', 'product-007', 1200),
+('inbound_order-003', 'product-012', 300),
+('inbound_order-004', 'product-004', 200),
+('inbound_order-004', 'product-006', 250),
+('inbound_order-004', 'product-011', 150),
+('inbound_order-005', 'product-005', 400),
+('inbound_order-005', 'product-010', 350),
+('inbound_order-005', 'product-002', 200),
+('inbound_order-006', 'product-007', 1500),
+('inbound_order-006', 'product-009', 600),
+('inbound_order-006', 'product-012', 200),
+('inbound_order-007', 'product-008', 400),
+('inbound_order-007', 'product-006', 200),
+('inbound_order-008', 'product-001', 300),
+('inbound_order-008', 'product-002', 200),
+('inbound_order-008', 'product-003', 100),
+('inbound_order-008', 'product-012', 150),
+('inbound_order-009', 'product-011', 300),
+('inbound_order-009', 'product-004', 150),
+('inbound_order-010', 'product-012', 400),
+('inbound_order-010', 'product-001', 200),
+('inbound_order-010', 'product-007', 800);
+
+-- 插入货架库存表数据（体现多对多：一个货架多种商品，一个商品多个货架）
+INSERT INTO shelf_inventory (shelf_code, sku, quantity) VALUES
+- 向货架库存表插入数据（基于实际表）
+INSERT INTO shelf_inventory (shelf_code, sku, quantity)
+SELECT
+    s.shelf_code,
+    p.sku,
+    -- 计算可放置数量（考虑长宽高和承重）
+    FLOOR(
+            LEAST(
+                    s.length / p.length,
+                    s.width / p.width,
+                    s.height / p.height,
+                    s.max_weight / p.weight
+            ) * 0.8  -- 保留20%空间余量
+    ) AS quantity
+FROM
+    product p
+        CROSS JOIN
+    storage_shelf s
+WHERE
+  -- 产品尺寸必须小于货架尺寸
+    p.length <= s.length
+  AND p.width <= s.width
+  AND p.height <= s.height
+  -- 产品重量必须小于货架最大承重
+  AND p.weight <= s.max_weight
+  -- 确保至少能放1个
+  AND FLOOR(
+              LEAST(
+                      s.length / p.length,
+                      s.width / p.width,
+                      s.height / p.height,
+                      s.max_weight / p.weight
+              ) * 0.8
+      ) >= 1
+  -- 示例：只处理特定产品（可选条件）
+  AND p.sku IN (
+                'product-001', 'product-002', 'product-003',
+                'product-004', 'product-005', 'product-006',
+                'product-007', 'product-008', 'product-009',
+                'product-010', 'product-011', 'product-012'
+    )
+  -- 示例：只处理特定货架（可选条件）
+  AND s.shelf_code LIKE 'S1%'  -- 以S1开头的货架
+ORDER BY
+    p.sku, s.shelf_code;
+
+-- 插入库存表数据（汇总货架库存总量）
+-- 插入库存数据（inventory）并关联货架库存
+INSERT INTO inventory (sku, quantity)
+VALUES
+    ('product-001', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-001')),
+    ('product-002', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-002')),
+    ('product-003', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-003')),
+    ('product-004', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-004')),
+    ('product-005', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-005')),
+    ('product-006', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-006')),
+    ('product-007', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-007')),
+    ('product-008', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-008')),
+    ('product-009', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-009')),
+    ('product-010', (SELECT SUM(quantity) FROM shelf_inventory WHERE sku = 'product-010'))
+ON DUPLICATE KEY UPDATE
+    quantity = (SELECT SUM(quantity) FROM shelf_inventory WHERE inventory.sku = shelf_inventory.sku);
+
+-- 插入销售订单表数据（体现一对多：一个客户多个订单）
+INSERT INTO sales_order (order_number, user_id, create_time) VALUES
+('order-001', 'user-003', '2025-05-25'),
+('order-002', 'user-004', '2025-05-26'),
+('order-003', 'user-006', '2025-05-26'),
+('order-004', 'user-008', '2025-05-27'),
+('order-005', 'user-010', '2025-05-27'),
+('order-006', 'user-003', '2025-05-28'),
+('order-007', 'user-006', '2025-05-28'),
+('order-008', 'user-012', '2025-05-29'),
+('order-009', 'user-014', '2025-05-29'),
+('order-010', 'user-003', '2025-05-29'),
+('order-011', 'user-008', '2025-05-29'),
+('order-012', 'user-010', '2025-05-29');
+
+-- 插入销售订单明细表数据（体现多对多：一个订单多种商品，一个商品多个订单）
+INSERT INTO sales_order_detail (order_number, sku, quantity) VALUES
+('order-001', 'product-001', 20),
+('order-001', 'product-002', 15),
+('order-001', 'product-007', 100),
+('order-002', 'product-003', 5),
+('order-002', 'product-007', 150),
+('order-002', 'product-012', 20),
+('order-003', 'product-005', 20),
+('order-003', 'product-010', 25),
+('order-003', 'product-002', 10),
+('order-004', 'product-004', 15),
+('order-004', 'product-006', 10),
+('order-004', 'product-011', 10),
+('order-005', 'product-008', 15),
+('order-005', 'product-009', 50),
+('order-005', 'product-007', 100),
+('order-006', 'product-007', 200),
+('order-006', 'product-002', 20),
+('order-006', 'product-012', 15),
+('order-007', 'product-001', 15),
+('order-007', 'product-003', 5),
+('order-007', 'product-010', 10),
+('order-008', 'product-005', 15),
+('order-008', 'product-006', 8),
+('order-008', 'product-008', 10),
+('order-009', 'product-011', 15),
+('order-009', 'product-004', 10),
+('order-009', 'product-009', 30),
+('order-010', 'product-001', 10),
+('order-010', 'product-007', 150),
+('order-010', 'product-012', 10),
+('order-011', 'product-004', 10),
+('order-011', 'product-011', 10),
+('order-011', 'product-002', 15),
+('order-012', 'product-005', 10),
+('order-012', 'product-010', 15),
+('order-012', 'product-007', 100);
+
+-- 插入出库单表数据（体现一对多：一个操作员多个出库单）
+INSERT INTO outbound_order (order_number, planned_date, user_id, status) VALUES
+('order-001', '2025-05-27', 'user-002', '未开始'),
+('order-002', '2025-05-28', 'user-005', '进行中'),
+('order-003', '2025-05-28', 'user-009', '未开始'),
+('order-004', '2025-05-29', 'user-011', '进行中'),
+('order-005', '2025-05-29', 'user-015', '未开始'),
+('order-006', '2025-05-30', 'user-002', '进行中'),
+('order-007', '2025-05-30', 'user-005', '未开始'),
+('order-008', '2025-05-31', 'user-009', '进行中'),
+('order-009', '2025-05-31', 'user-011', '未开始'),
+('order-010', '2025-06-01', 'user-015', '进行中'),
+('order-011', '2025-06-01', 'user-002', '未开始'),
+('order-012', '2025-06-01', 'user-005', '进行中');
+
+-- 插入AGV小车表数据（体现一对多：一个负责人多辆小车）
+-- 插入25辆AGV小车数据
+INSERT INTO agv_car (
+    car_number,
+    status,
+    battery_level,
+    sku,
+    quantity,
+    start_x,
+    start_y,
+    end_x,
+    end_y,
+    user_id,
+    max_weight,
+    create_time,
+    update_time,
+    end_z,
+    location_x,
+    location_y
+)
+WITH RECURSIVE numbers AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1 FROM numbers WHERE n < 25
+)
+SELECT
+    CONCAT('car-', LPAD(n, 3, '0')) AS car_number,
+    '空闲' AS status,
+    100 AS battery_level,
+    NULL AS sku,
+    0 AS quantity,
+    -- start_x循环使用1,3,5,7,9
+    CASE MOD(n-1, 5)
+        WHEN 0 THEN 1
+        WHEN 1 THEN 3
+        WHEN 2 THEN 5
+        WHEN 3 THEN 7
+        WHEN 4 THEN 9
+        END AS start_x,
+    -- start_y循环使用13,15,17,19,21
+    CASE MOD(n-1, 5)
+        WHEN 0 THEN 13
+        WHEN 1 THEN 15
+        WHEN 2 THEN 17
+        WHEN 3 THEN 19
+        WHEN 4 THEN 21
+        END AS start_y,
+    NULL AS end_x,
+    NULL AS end_y,
+    -- user_id随机从user-001,user-007,user-013中选择
+    CASE FLOOR(RAND() * 3)
+        WHEN 0 THEN 'user-001'
+        WHEN 1 THEN 'user-007'
+        WHEN 2 THEN 'user-013'
+        END AS user_id,
+    -- max_weight随机从100.00,200.00,500.00中选择
+    CASE FLOOR(RAND() * 3)
+        WHEN 0 THEN 100.00
+        WHEN 1 THEN 200.00
+        WHEN 2 THEN 500.00
+        END AS max_weight,
+    NOW() AS create_time,
+    NULL AS update_time,
+    NULL AS end_z,
+    -- location_x与start_x相同
+    CASE MOD(n-1, 5)
+        WHEN 0 THEN 1
+        WHEN 1 THEN 3
+        WHEN 2 THEN 5
+        WHEN 3 THEN 7
+        WHEN 4 THEN 9
+        END AS location_x,
+    -- location_y与start_y相同
+    CASE MOD(n-1, 5)
+        WHEN 0 THEN 13
+        WHEN 1 THEN 15
+        WHEN 2 THEN 17
+        WHEN 3 THEN 19
+        WHEN 4 THEN 21
+        END AS location_y
+FROM numbers;
+
+-- 修改！！！
+-- 1. 更新 product 表，调整货物尺寸，确保不超过货架尺寸（700cm x 200cm）
+UPDATE product SET
+    length = 200.0,
+    width = 1.2
+WHERE sku = 'product-001'; -- 钢筋
+
+UPDATE product SET
+    length = 150.0,
+    width = 50.0
+WHERE sku = 'product-002'; -- 木材板
+
+UPDATE product SET
+    length = 100.0,
+    width = 50.0
+WHERE sku = 'product-003'; -- 混凝土板
+
+UPDATE product SET
+    length = 125.0,
+    width = 60.0
+WHERE sku = 'product-004'; -- 钢板
+
+UPDATE product SET
+    length = 150.0,
+    width = 10.0
+WHERE sku = 'product-005'; -- 防腐木
+
+UPDATE product SET
+    length = 200.0,
+    width = 5.0
+WHERE sku = 'product-006'; -- 不锈钢管
+
+UPDATE product SET
+    length = 24.0,
+    width = 11.5
+WHERE sku = 'product-007'; -- 水泥砖
+
+UPDATE product SET
+    length = 200.0,
+    width = 5.0
+WHERE sku = 'product-008'; -- 铝合金型材
+
+UPDATE product SET
+    length = 100.0,
+    width = 100.0
+WHERE sku = 'product-009'; -- 钢丝网
+
+UPDATE product SET
+    length = 150.0,
+    width = 5.0
+WHERE sku = 'product-010'; -- 木方
+
+UPDATE product SET
+    length = 100.0,
+    width = 100.0
+WHERE sku = 'product-011'; -- 镀锌钢板
+
+UPDATE product SET
+    length = 50.0,
+    width = 40.0
+WHERE sku = 'product-012'; -- 建筑砂浆
+
+-- 2. 更新 storage_shelf 表，调整货架坐标分布在 (500,50) 到 (1500,400)
+UPDATE storage_shelf SET
+    location_x = 500.0 + ((id-1) % 5) * 200.0, -- 5列，间隔200cm
+    location_y = 50.0 + ((id-1) / 5) * 70.0   -- 3行，间隔70cm
+WHERE id BETWEEN 1 AND 15;
+
+-- 3. 更新 agv_car 表，设置停车区坐标在 (200,50) 到 (300,150)
+UPDATE agv_car SET
+    location_x = 200.0 + ((id-1) / 2) * 20.0, -- 每行2辆车，间隔20cm
+    location_y = 50.0 + ((id-1) % 2) * 50.0  -- 每列间隔50cm
+WHERE id BETWEEN 1 AND 10;
+
+-- 小车算法测试新增数据
+-- 1. 插入测试订单（避免order_number冲突）
+SET @max_order_suffix = (SELECT MAX(CAST(SUBSTRING(order_number, 16) AS UNSIGNED))
+                         FROM inbound_order
+                         WHERE order_number LIKE 'inbound_order-test-%');
+SET @new_order_suffix = COALESCE(@max_order_suffix, 0) + 1;
+SET @new_order_number = CONCAT('inbound_order-test-', LPAD(@new_order_suffix, 3, '0'));
+
+INSERT INTO inbound_order (order_name, order_number, entry_date, user_id, status)
+VALUES ('测试入库', @new_order_number, '2025-06-03', 'user-001', '待处理');
+
+-- 2. 插入订单明细
+INSERT INTO inbound_order_detail (order_number, sku, quantity)
+VALUES
+    (@new_order_number, 'product-001', 300), -- 钢筋，300件
+    (@new_order_number, 'product-004', 200), -- 钢板，200件
+    (@new_order_number, 'product-011', 150); -- 镀锌钢板，150件
+
+-- 3. 插入新货架（从shelf-016开始，坐标匹配代码期望）
+SET @max_shelf_id = (SELECT MAX(CAST(SUBSTRING(shelf_code, 7) AS UNSIGNED))
+                     FROM storage_shelf
+                     WHERE shelf_code LIKE 'shelf-%');
+SET @start_shelf_id = COALESCE(@max_shelf_id, 0) + 1;
+
+INSERT INTO storage_shelf (shelf_code, length, width, height, max_weight, location_x, location_y, location_z)
+SELECT
+    CONCAT('shelf-', LPAD(@start_shelf_id + n, 3, '0')),
+    700.0,
+    200.0,
+    200.0,
+    1000.0,
+    500.0 + (n % 5) * 200.0,
+    50.0 + (n DIV 5) * 70.0,
+    1.0
+FROM (
+    SELECT a.N + b.N * 10 AS n
+    FROM
+        (SELECT 0 AS N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) a,
+        (SELECT 0 AS N UNION SELECT 1 UNION SELECT 2) b
+) numbers
+WHERE n < 15;
+
+-- 4. 插入新AGV（从car-011开始，坐标在停车区）
+SET @max_car_id = (SELECT MAX(CAST(SUBSTRING(car_number, 5) AS UNSIGNED))
+                   FROM agv_car
+                   WHERE car_number LIKE 'car-%');
+SET @start_car_id = COALESCE(@max_car_id, 0) + 1;
+
+INSERT INTO agv_car (car_number, status, battery_level, sku, quantity, user_id, max_weight, location_x, location_y, start_x, start_y)
+SELECT
+    CONCAT('car-', LPAD(@start_car_id + n, 3, '0')),
+    '空闲',
+    75 + n * 5,
+    NULL,
+    0,
+    'user-001',
+    2000.0,
+    200.0 + (n DIV 2) * 20.0,
+    50.0 + (n % 2) * 50.0,
+    200.0 + (n DIV 2) * 20.0,
+    50.0 + (n % 2) * 50.0
+FROM (
+    SELECT a.N
+    FROM
+        (SELECT 0 AS N UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4) a
+) numbers
+WHERE n < 5;

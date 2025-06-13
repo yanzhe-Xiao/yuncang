@@ -1,0 +1,54 @@
+services:
+  # 1. MySQL 服务
+  db:
+    image: mysql:8.0
+    container_name: yuncang-mysql
+    restart: always
+    environment:
+      # 设置MySQL的root用户密码和要创建的数据库名
+      # 注意：这里的密码和数据库名需要和下面app服务的环境变量配置保持一致
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: yuncang
+    ports:
+      # 将容器的3306端口映射到宿主机的3307端口，方便外部工具连接
+      - "3307:3306"
+    volumes:
+      # 将我们创建的init.sql挂载到容器的初始化目录，实现自动建表
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      # 数据持久化，防止容器重启后数据丢失
+      - ./docker/mysql/data:/var/lib/mysql
+
+  # 2. Redis 服务
+  redis:
+    image: redis:6.2-alpine
+    container_name: yuncang-redis
+    restart: always
+    ports:
+      # 将容器的6379端口映射到宿主机的6380端口
+      - "6380:6379"
+    volumes:
+      # 数据持久化
+      - ./docker/redis/data:/data
+
+  # 3. 您的 Spring Boot 应用服务
+  app:
+    # 使用当前目录下的 Dockerfile 来构建镜像
+    build: .
+    container_name: yuncang-app
+    restart: always
+    depends_on:
+      # 确保在app启动前，db和redis服务已经启动
+      - db
+      - redis
+    ports:
+      # 将容器的8080端口映射到宿主机的8080端口
+      - "8080:8080"
+    environment:
+      # --- 核心配置：覆盖 application.yml 中的配置 ---
+      # 使用服务名 'db' 和 'redis' 作为主机名进行连接
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/yuncang?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai" # 注意：主机名是db, 且useSSL=false
+      SPRING_DATASOURCE_USERNAME: "root"
+      SPRING_DATASOURCE_PASSWORD: ""
+      SPRING_DATA_REDIS_HOST: "redis" # 注意：主机名是redis
+      SPRING_DATA_REDIS_PORT: "6379"
+      SPRING_DATA_REDIS_DATABASE: "2"
