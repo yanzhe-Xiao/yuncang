@@ -7,7 +7,7 @@
 
 This document covers the Automated Guided Vehicle (AGV) automation system within the yuncang warehouse management platform. The AGV system provides intelligent vehicle management, path planning, and automated warehouse operations including inbound/outbound processing with collision avoidance.
 
-For general warehouse operations, see [Warehouse Operations](/yanzhe-Xiao/yuncang/doc/4-warehouse-operations). For system configuration settings, see [Factory Configuration](/yanzhe-Xiao/yuncang/6.1-factory-configuration).
+For general warehouse operations, see [Warehouse Operations](/yanzhe-Xiao/yuncang/doc/warehouse-operations). For system configuration settings, see [Factory Configuration](/yanzhe-Xiao/yuncang/doc/Factory-Configuration).
 
 ## System Overview
 
