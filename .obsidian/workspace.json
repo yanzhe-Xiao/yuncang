@@ -1,0 +1,177 @@
+{
+  "main": {
+    "id": "09eff4306d06be8b",
+    "type": "split",
+    "children": [
+      {
+        "id": "e78169acaac1f656",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7677705b8d23ec2a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "02b4c1483c62efc8",
+    "type": "split",
+    "children": [
+      {
+        "id": "76837ec708b7da98",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1ded505ca1f8c8af",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "0692d078547ad64b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "27329a758db75344",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f85dbc60c09f00ab",
+    "type": "split",
+    "children": [
+      {
+        "id": "1a3b92020458e0de",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f989f46e6e4bac00",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "b7b7a94238b128fb",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "ba37a2d35cc18b05",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "f136fd8aa2019511",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "README.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "7677705b8d23ec2a",
+  "lastOpenFiles": [
+    "doc/Getting-Started.md",
+    "README.md",
+    "doc/Overview.md",
+    "doc/AGV-Automation.md",
+    "doc",
+    "doc/Warehouse-Operations.md",
+    "doc/User-Management.md",
+    "doc/System-Configuration-APIs.md",
+    "doc/System-Architecture.md",
+    "doc/System-Administration.md",
+    "doc/Security-Architecture.md",
+    "doc/Relationships-and-Constraints.md",
+    "doc/Order-Processing.md",
+    "doc/Order-Management-APIs.md",
+    "doc/Inventory-Management.md",
+    "doc/Inventory-APIs.md",
+    "doc/Factory-Configuration.md",
+    "doc/Docker-Deployment.md",
+    "doc/Development-Environment.md",
+    "doc/Data-Layer-Architecture.md",
+    "doc/Database-Schema.md",
+    "doc/Core-Entities.md",
+    "doc/Application-Structure.md",
+    "doc/API-Reference.md",
+    "doc/AGV-Management-APIs.md"
+  ]
+}
